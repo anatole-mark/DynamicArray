@@ -52,6 +52,7 @@ public:
 		if (capacity_ <= 0)
 		{
 			capacity_ = defaultCapacity;
+			buf_ = static_cast<T*>(malloc(capacity_ * sizeof(T)));
 		}
 
 		other.capacity_ = 0;
@@ -346,7 +347,7 @@ private:
 
 	void reallocate()
 	{
-		capacity_ *= 2;
+		capacity_ = (capacity_ > 0) ? capacity_ * 2 : defaultCapacity;
 		T* p = static_cast<T*>(malloc(capacity_ * sizeof(T)));
 
 		for (int32_t i = 0; i < size_; ++i)
