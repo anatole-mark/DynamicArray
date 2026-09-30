@@ -15,14 +15,14 @@ public:
 		: size_{ 0 }
 		, capacity_{ defaultCapacity }
 	{
-		buf_ = static_cast<T*>(malloc(capacity_ * sizeof(T)));
+		buf_ = static_cast<T*>(std::malloc(capacity_ * sizeof(T)));
 	}
 
 	explicit DynamicArray(const int32_t cap)
 		: size_{ 0 }
 		, capacity_{ cap }
 	{
-		buf_ = static_cast<T*>(malloc(capacity_ * sizeof(T)));
+		buf_ = static_cast<T*>(std::malloc(capacity_ * sizeof(T)));
 	}
 
 	DynamicArray(const DynamicArray<T>& other)
@@ -34,7 +34,7 @@ public:
 			capacity_ = defaultCapacity;
 		}
 
-		T* p = static_cast<T*>(malloc(capacity_ * sizeof(T)));
+		T* p = static_cast<T*>(std::malloc(capacity_ * sizeof(T)));
 
 		for (int32_t i = 0; i < size_; ++i)
 		{
@@ -52,7 +52,7 @@ public:
 		if (capacity_ <= 0)
 		{
 			capacity_ = defaultCapacity;
-			buf_ = static_cast<T*>(malloc(capacity_ * sizeof(T)));
+			buf_ = static_cast<T*>(std::malloc(capacity_ * sizeof(T)));
 		}
 
 		other.capacity_ = 0;
@@ -68,7 +68,7 @@ public:
 			{
 				buf_[i].~T();
 			}
-			free(buf_);
+			std::free(buf_);
 		}
 	}
 
@@ -77,7 +77,7 @@ public:
 		if (capacity_ == 0)
 		{
 			capacity_ = defaultCapacity;
-			buf_ = static_cast<T*>(malloc(capacity_ * sizeof(T)));
+			buf_ = static_cast<T*>(std::malloc(capacity_ * sizeof(T)));
 		}
 
 		if (size_ == capacity_)
@@ -106,25 +106,16 @@ public:
 
 		if (index < size_ && index >= 0)
 		{
-			T* temp = static_cast<T*>(malloc(capacity_ * sizeof(T)));
+			if (size_ + 1 >= capacity_) reallocate();
 
-			for (int32_t i = 0; i < index; ++i)
+			for (int32_t i = size_; i > index; --i)
 			{
-				new (temp + i) T(std::move(buf_[i]));
-				buf_[i].~T();
+				new(buf_ + i) T(std::move(buf_[i - 1]));
+				buf_[i - 1].~T();
 			}
 
-			new (temp + index) T(std::move(value));
+			new(buf_ + index) T(std::move(value));
 			++size_;
-
-			for (int32_t j = index + 1; j < size_; ++j)
-			{
-				new (temp + j) T(std::move(buf_[j - 1]));
-				buf_[j - 1].~T();
-			}
-
-			free(buf_);
-			buf_ = temp;
 		}
 
 		return index;
@@ -132,24 +123,15 @@ public:
 
 	void remove(const int32_t index)
 	{
-		if (index <= size_ - 1 && index >= 0 && size_ > 0)
+		if (index < size_ && index >= 0 && size_ > 0)
 		{
-			T* temp = static_cast<T*>(malloc(capacity_ * sizeof(T)));
-
-			for (int32_t i = 0; i < index; ++i)
+			for (int32_t i = index; i < size_ - 1; ++i)
 			{
-				new (temp + i) T(std::move(buf_[i]));
+				buf_[i].~T();
+				new(buf_ + i) T(std::move(buf_[i + 1]));
 			}
-
+			buf_[size_ - 1].~T();
 			--size_;
-
-			for (int32_t j = index; j < size_; ++j)
-			{
-				new (temp + j) T(std::move(buf_[j + 1]));
-			}
-
-			free(buf_);
-			buf_ = temp;
 		}
 	}
 
@@ -167,6 +149,7 @@ public:
 
 	const T& operator[](int32_t index) const
 	{
+		assert(index >= 0 && index < size_);
 		return buf_[index];
 	}
 
@@ -324,9 +307,9 @@ public:
 		}
 
 	private:
-		T* iter_;
-		T* first_;
-		T* last_;
+		const T* iter_;
+		const T* first_;
+		const T* last_;
 		bool isReverse_;
 	};
 
@@ -348,7 +331,7 @@ private:
 	void reallocate()
 	{
 		capacity_ = (capacity_ > 0) ? capacity_ * 2 : defaultCapacity;
-		T* p = static_cast<T*>(malloc(capacity_ * sizeof(T)));
+		T* p = static_cast<T*>(std::malloc(capacity_ * sizeof(T)));
 
 		for (int32_t i = 0; i < size_; ++i)
 		{
@@ -356,7 +339,7 @@ private:
 			buf_[i].~T();
 		}
 
-		free(buf_);
+		std::free(buf_);
 		buf_ = p;
 	}
 };
