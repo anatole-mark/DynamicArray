@@ -6,6 +6,7 @@ support for move semantics, mutable and const iterators.
 - Copy and move constructors and assignment (rule of five)
 - Forward and reverse iterators (mutable and const)
 - GoogleTest unit tests
+- Github CI configured
 
 ### Future work
 - Refactor iterators to be STL-style, not Java-style
