@@ -3,7 +3,8 @@ project(DynamicArray)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(DynamicArray main.cpp
-        lab2.h)
+add_executable(DynamicArray src/main.cpp)
+target_include_directories(DynamicArray PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_subdirectory(Google_tests)
+enable_testing()
+add_subdirectory(tests)

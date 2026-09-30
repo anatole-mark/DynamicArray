@@ -12,25 +12,23 @@ public:
 	static constexpr int32_t defaultCapacity{ 4 };
 
 	DynamicArray()
-		: capacity_{ defaultCapacity }
-		, size_{ 0 }
+		: size_{ 0 }
+		, capacity_{ defaultCapacity }
 	{
 		buf_ = static_cast<T*>(malloc(capacity_ * sizeof(T)));
 	}
 
-	DynamicArray(int32_t cap)
-		: capacity_{ cap }
-		, size_{ 0 }
+	explicit DynamicArray(const int32_t cap)
+		: size_{ 0 }
+		, capacity_{ cap }
 	{
 		buf_ = static_cast<T*>(malloc(capacity_ * sizeof(T)));
 	}
 
 	DynamicArray(const DynamicArray<T>& other)
-		: capacity_{ other.capacity_ }
-		, size_{ other.size_ }
+		: size_{ other.size_ }
+		, capacity_{ other.capacity_ }
 	{
-		std::cout << "Copied" << std::endl;
-
 		if (capacity_ <= 0)
 		{
 			capacity_ = defaultCapacity;
@@ -46,13 +44,11 @@ public:
 		buf_ = p;
 	}
 
-	DynamicArray(DynamicArray<T>&& other)
-		: capacity_{ other.capacity_ }
+	DynamicArray(DynamicArray<T>&& other) noexcept
+		: buf_ { other.buf_ }
 		, size_{ other.size_ }
-		, buf_ { other.buf_ }
+		, capacity_{ other.capacity_ }
 	{
-		std::cout << "Moved" << std::endl;
-
 		if (capacity_ <= 0)
 		{
 			capacity_ = defaultCapacity;
@@ -99,6 +95,7 @@ public:
 		if (index == size_)
 		{
 			pushBack(value);
+			return index;
 		}
 
 		if (size_ == capacity_)
@@ -132,7 +129,7 @@ public:
 		return index;
 	}
 
-	void remove(int32_t index)
+	void remove(const int32_t index)
 	{
 		if (index <= size_ - 1 && index >= 0 && size_ > 0)
 		{
@@ -178,12 +175,12 @@ public:
 		return buf_[index];
 	}
 
-	int32_t size() const
+	[[nodiscard]] int32_t size() const
 	{
 		return size_;
 	}
 
-	int32_t capacity() const
+	[[nodiscard]] int32_t capacity() const
 	{
 		return capacity_;
 	}
@@ -199,7 +196,7 @@ public:
 		{
 		}
 
-		Iterator(T* arr, int32_t size, bool isReverse)
+		Iterator(T* arr, int32_t size, const bool isReverse)
 			: first_{ arr }
 			, last_{ arr + size }
 			, isReverse_{ isReverse }
@@ -225,7 +222,7 @@ public:
 			*iter_ = value;
 		}
 
-		bool hasNext() const
+		[[nodiscard]] bool hasNext() const
 		{
 			if (isReverse_)
 			{
@@ -271,12 +268,14 @@ public:
 	{
 	public:
 		ConstIterator()
-			: iter_{ nullptr }
-			, isReverse_{ false }
+			: iter_{nullptr}
+			, first_(nullptr)
+			, last_(nullptr)
+			, isReverse_{false}
 		{
 		}
 
-		ConstIterator(T* arr, int32_t size, bool isReverse)
+		ConstIterator(T* arr, int32_t size, const bool isReverse)
 			: iter_{ nullptr }
 			, first_{ arr }
 			, last_{ arr + size }
@@ -298,7 +297,7 @@ public:
 			return *iter_;
 		}
 
-		bool hasNext() const
+		[[nodiscard]] bool hasNext() const
 		{
 			if (isReverse_)
 			{

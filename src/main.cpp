@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "lab2.h"
+#include "../include/DynamicArray.hpp"
 
 int main()
 {
